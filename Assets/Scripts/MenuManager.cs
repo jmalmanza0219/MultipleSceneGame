@@ -7,6 +7,11 @@ public class MenuManager : MonoBehaviour
 {
   public void StartGame()
     {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetStats(); // resets Health + Score to starting values
+        }
+
         SceneManager.LoadScene("GameScene");
     }
 }

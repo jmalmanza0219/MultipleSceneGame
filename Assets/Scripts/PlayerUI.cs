@@ -8,9 +8,14 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private TMP_Text healthText;
     [SerializeField] private TMP_Text scoreText;
 
-    public void SetUI(int health, int score)
+    void Update()
     {
-        if (healthText != null) healthText.text = $"Health: {health}";
-        if (scoreText != null)  scoreText.text  = $"Score: {score}";
+        if (GameManager.Instance == null) return;
+
+        if (healthText != null)
+            healthText.text = $"Health: {GameManager.Instance.Health}";
+
+        if (scoreText != null)
+            scoreText.text = $"Score: {GameManager.Instance.Score}";
     }
 }

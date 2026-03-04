@@ -6,16 +6,25 @@ using UnityEngine.SceneManagement;
 
 public class GameOverManager : MonoBehaviour
 {
-    [SerializeField] private TMP_Text finalScoreText;
+  [SerializeField] private TMP_Text finalScoreText;
 
     void Start()
     {
-        int finalScore = PlayerPrefs.GetInt("FinalScore", 0);
-        finalScoreText.text = $"Final Score: {finalScore}";
+        int finalScore = 0;
+
+        if (GameManager.Instance != null)
+            finalScore = GameManager.Instance.Score;
+
+        if (finalScoreText != null)
+            finalScoreText.text = $"Final Score: {finalScore}";
     }
 
-     public void TryAgain()
+    public void TryAgain()
     {
+        // Reset stats for a fresh run
+        if (GameManager.Instance != null)
+            GameManager.Instance.ResetStats();
+
         SceneManager.LoadScene("GameScene");
     }
 }
