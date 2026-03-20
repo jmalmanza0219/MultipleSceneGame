@@ -11,15 +11,19 @@ public class UIManager : MonoBehaviour
 
     private void OnEnable()
     {
-        if (GameManager.Instance == null) return;
+        Subscribe();
+    }
 
-        GameManager.Instance.OnScoreChanged += UpdateScore;
-        GameManager.Instance.OnHealthChanged += UpdateHealth;
-        GameManager.Instance.OnGameOver += HandleGameOver;
+    private void Start()
+    {
+        // Backup in case GameManager wasn't ready in OnEnable
+        Subscribe();
 
-        // Sync UI immediately in case events already fired
-        UpdateScore(GameManager.Instance.Score);
-        UpdateHealth(GameManager.Instance.Health);
+        if (GameManager.Instance != null)
+        {
+            UpdateScore(GameManager.Instance.Score);
+            UpdateHealth(GameManager.Instance.Health);
+        }
     }
 
     private void OnDisable()
@@ -29,6 +33,19 @@ public class UIManager : MonoBehaviour
         GameManager.Instance.OnScoreChanged -= UpdateScore;
         GameManager.Instance.OnHealthChanged -= UpdateHealth;
         GameManager.Instance.OnGameOver -= HandleGameOver;
+    }
+
+    private void Subscribe()
+    {
+        if (GameManager.Instance == null) return;
+
+        GameManager.Instance.OnScoreChanged -= UpdateScore;
+        GameManager.Instance.OnHealthChanged -= UpdateHealth;
+        GameManager.Instance.OnGameOver -= HandleGameOver;
+
+        GameManager.Instance.OnScoreChanged += UpdateScore;
+        GameManager.Instance.OnHealthChanged += UpdateHealth;
+        GameManager.Instance.OnGameOver += HandleGameOver;
     }
 
     private void UpdateScore(int newScore)

@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
-   [Header("Movement")]
+    [Header("Movement")]
     [SerializeField] private float moveSpeed = 8f;
     [SerializeField] private float jumpForce = 12f;
 
@@ -34,7 +34,13 @@ public class PlayerController : MonoBehaviour
         rb.velocity = new Vector2(horizontalInput * moveSpeed, rb.velocity.y);
 
         if (jumpQueued && groundContacts > 0)
+        {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+
+            // Play jump sound
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.jumpSound);
+        }
 
         jumpQueued = false;
     }
@@ -55,8 +61,21 @@ public class PlayerController : MonoBehaviour
 
         if (collision.gameObject.CompareTag("Enemy"))
         {
+            Debug.Log("Hit enemy");
+
+            // Play damage sound
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.damageSound);
+
             if (GameManager.Instance != null)
+            {
+                Debug.Log("Taking damage");
                 GameManager.Instance.TakeDamage(10);
+            }
+            else
+            {
+                Debug.Log("GameManager is NULL");
+            }
         }
     }
 
@@ -70,10 +89,27 @@ public class PlayerController : MonoBehaviour
     {
         if (other.CompareTag("Coin"))
         {
-            if (GameManager.Instance != null)
-                GameManager.Instance.AddScore(10);
+            Debug.Log("Coin collected");
 
-            Destroy(other.gameObject);
+            // Play coin sound
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.coinSound);
+
+            if (GameManager.Instance != null)
+            {
+                Debug.Log("Adding score");
+                GameManager.Instance.AddScore(10);
+            }
+            else
+            {
+                Debug.Log("GameManager is NULL");
+            }
+
+            if (CoinPoolManager.Instance != null)
+            {
+                Debug.Log("Returning coin to pool");
+                CoinPoolManager.Instance.CollectCoin(other.gameObject);
+            }
         }
     }
 }

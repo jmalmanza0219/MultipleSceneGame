@@ -21,10 +21,12 @@ public class GameOverManager : MonoBehaviour
 
     public void TryAgain()
     {
-        // Reset stats for a fresh run
-        if (GameManager.Instance != null)
-            GameManager.Instance.ResetStats();
+       if (GameManager.Instance != null)
+        GameManager.Instance.ResetStats();
 
-        SceneManager.LoadScene("GameScene");
+    if (CoinPoolManager.Instance != null)
+        CoinPoolManager.Instance.ResetCoins();
+
+    SceneManager.LoadScene("GameScene");
     }
 }
