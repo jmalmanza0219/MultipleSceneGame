@@ -1,67 +1,70 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.SceneManagement;
 
-public class UIManager : MonoBehaviour
+public class GameOverUIManager : MonoBehaviour
 {
-    [SerializeField] private TMP_Text scoreText;
-    [SerializeField] private TMP_Text healthText;
+    [SerializeField] private TMP_Text finalScoreText;      // Shows the player's score
+    [SerializeField] private TMP_Text leaderboardTextUI;   // Shows top 5 high scores
 
-    private void OnEnable()
+    void Start()
     {
-        Subscribe();
-    }
-
-    private void Start()
-    {
-        // Backup in case GameManager wasn't ready in OnEnable
-        Subscribe();
+        // Display final score
+        int finalScore = 0;
+        float completionTime = 0f;
 
         if (GameManager.Instance != null)
         {
-            UpdateScore(GameManager.Instance.Score);
-            UpdateHealth(GameManager.Instance.Health);
+            finalScore = GameManager.Instance.Score;
+            completionTime = Time.timeSinceLevelLoad; // example timer
         }
+
+        if (finalScoreText != null)
+            finalScoreText.text = $"Final Score: {finalScore}";
+
+        // Save high score to database
+        if (DatabaseManager.Instance != null)
+        {
+            string playerName = "Player1"; // Replace with input field if you have one
+            DatabaseManager.Instance.AddHighScore(playerName, finalScore, completionTime);
+        }
+
+        // Display top 5 high scores
+        DisplayTopHighScores();
     }
 
-    private void OnDisable()
+    private void DisplayTopHighScores()
     {
-        if (GameManager.Instance == null) return;
+        if (DatabaseManager.Instance == null || leaderboardTextUI == null)
+            return;
 
-        GameManager.Instance.OnScoreChanged -= UpdateScore;
-        GameManager.Instance.OnHealthChanged -= UpdateHealth;
-        GameManager.Instance.OnGameOver -= HandleGameOver;
+        List<HighScoreData> topScores = DatabaseManager.Instance.GetTopHighScores(5);
+
+        string leaderboardText = "Top 5 High Scores:\n";
+        for (int i = 0; i < topScores.Count; i++)
+        {
+            HighScoreData hs = topScores[i];
+            leaderboardText += $"{i + 1}. {hs.PlayerName} - {hs.Score} pts - {hs.CompletionTime:F2}s\n";
+        }
+
+        leaderboardTextUI.text = leaderboardText;
     }
 
-    private void Subscribe()
+    public void TryAgain()
     {
-        if (GameManager.Instance == null) return;
+        if (GameManager.Instance != null)
+            GameManager.Instance.ResetStats();
 
-        GameManager.Instance.OnScoreChanged -= UpdateScore;
-        GameManager.Instance.OnHealthChanged -= UpdateHealth;
-        GameManager.Instance.OnGameOver -= HandleGameOver;
+        if (CoinPoolManager.Instance != null)
+            CoinPoolManager.Instance.ResetCoins();
 
-        GameManager.Instance.OnScoreChanged += UpdateScore;
-        GameManager.Instance.OnHealthChanged += UpdateHealth;
-        GameManager.Instance.OnGameOver += HandleGameOver;
+        SceneManager.LoadScene("GameScene");
     }
 
-    private void UpdateScore(int newScore)
+    public void GoToMainMenu()
     {
-        if (scoreText != null)
-            scoreText.text = "Score: " + newScore;
-    }
-
-    private void UpdateHealth(int newHealth)
-    {
-        if (healthText != null)
-            healthText.text = "Health: " + newHealth;
-    }
-
-    private void HandleGameOver()
-    {
-        SceneManager.LoadScene("GameOver");
+        SceneManager.LoadScene("MainMenu");
     }
 }
